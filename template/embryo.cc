@@ -13,7 +13,8 @@ using namespace std;
 // And exit with status 0.
 class ExitStream {
  public:
-  ExitStream(double score) { cout << score << endl; }
+  ExitStream(double score) : status_(0) {cout << score << endl;}
+  ExitStream(string dummy, int status) : status_(status) {}
 
   template<class T>
   ExitStream& operator<< (const T& obj) {
@@ -21,9 +22,13 @@ class ExitStream {
     return *this;
   }
 
-  ~ExitStream() { cout << endl; exit(0); }
+  ~ExitStream() { cout << endl; exit(status_); }
+ private:
+  int status_;
 };
 #define VERDICT(score) ExitStream(score)
+#define EXIT(status) ExitStream("", status)
+
 
 typedef void (*TestBody)();
 class Tester {
@@ -38,15 +43,6 @@ TEST(gcd, {
   assert(gcd(12, 18) == 6 && gcd(12, 13) == 1);
   assert(gcd(18, 12) == 6);
 });
-
-
-
-
-
-
-
-
-
 
 // t: embryo.cc:34: void TEST_dummy2(): Assertion `gcd(12, 18) == 6 && gcd(12,
 // 13) == 2' failed.

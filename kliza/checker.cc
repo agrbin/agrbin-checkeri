@@ -9,14 +9,20 @@
 using namespace std;
 
 // Usage:
-//  VERDICT(0) << "bok " << 5 << " a treba " << 6;
+//  VERDICT(0) << "got " << 5 << " expected " << 6;
 // This will output
 //  0\n
 //  bok 5 a treba 6\n
 // And exit with status 0.
+//
+//  EXIT(1) << "bye bye";
+// Will output
+//  bye bye\n
+// And exit with status 1.
 class ExitStream {
  public:
-  ExitStream(double score) { cout << score << endl; }
+  ExitStream(double score) : status_(0) {cout << score << endl;}
+  ExitStream(string dummy, int status) : status_(status) {}
 
   template<class T>
   ExitStream& operator<< (const T& obj) {
@@ -24,9 +30,12 @@ class ExitStream {
     return *this;
   }
 
-  ~ExitStream() { cout << endl; exit(0); }
+  ~ExitStream() { cout << endl; exit(status_); }
+ private:
+  int status_;
 };
 #define VERDICT(score) ExitStream(score)
+#define EXIT(status) ExitStream("", status)
 
 typedef void (*TestBody)();
 class Tester {
@@ -170,7 +179,7 @@ int main(int argc, char *argv[]) {
   ifstream fnatj(argv[3]);
 
   if (finput.fail() || fsluzb.fail() || fnatj.fail()) {
-    VERDICT(0) << "Internal: one of the input streams failed.";
+    EXIT(1) << "Internal: one of the input streams failed.";
   }
 
   string rj, slurj;
