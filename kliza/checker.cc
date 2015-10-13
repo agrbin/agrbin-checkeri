@@ -87,14 +87,14 @@ void procitaj_kandidat_output(ifstream &in) {
     VERDICT(0) << "Couldn't read minimal number of moves.";
   }
   if (kandidat_min_broj_poteza != sluzbeno_min_broj_poteza) {
-    VERDICT(0) << "Wrong minimal number of moves. Got: "
+    VERDICT(0.5) << "Wrong minimal number of moves. Got: "
       << kandidat_min_broj_poteza << " Expected "
       << sluzbeno_min_broj_poteza;
   }
   for (int i = 0; i < kandidat_min_broj_poteza; ++i) {
     int potez;
     if (!(in >> potez)) {
-      VERDICT(0) << "Couldn't read "
+      VERDICT(0.5) << "Couldn't read "
         << i << "th move from official input. Expected: "
         << sluzbeno_min_broj_poteza << " moves.";
     }
@@ -102,7 +102,7 @@ void procitaj_kandidat_output(ifstream &in) {
   }
   int tmp;
   if (in >> tmp) {
-    VERDICT(0) << "User input contains too much data.";
+    VERDICT(0.5) << "User input contains too much data.";
   }
 }
 

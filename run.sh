@@ -5,6 +5,7 @@ if [ $# -ne 1 ]; then
   echo
   echo "task directory name must contain files: "
   echo "checker.cc, and dirs tp/ and broken_tp/"
+  echo "have environment variable VERBOSE=true to see more details."
   exit;
 fi
 
@@ -24,13 +25,14 @@ for i in $dir/tp/*in*; do
     echo "Checker returned non zero exit code.";
     exit;
   fi
-  if [ $(head -n1 verdict) -ne 1 ]; then
+  if [ $(head -n1 verdict) != "1" ]; then
     echo "Checker thinks that official solution is not correct: ";
     echo $in $out
     cat verdict
     exit;
   fi
   echo $in $out is good.
+  [ "$VERBOSE" = "true" ] && cat verdict && echo
 done
 
 for i in $dir/broken_tp/*in*; do
@@ -42,13 +44,14 @@ for i in $dir/broken_tp/*in*; do
     echo "Checker returned non zero exit code.";
     exit;
   fi
-  if [ $(head -n1 verdict) -eq 1 ]; then
+  if [ $(head -n1 verdict) = "1" ]; then
     echo "Checker thinks that broken solution is correct: ";
     echo $in $out $uout
     cat verdict
     exit;
   fi
   echo $in $out $uout is broken as it should be.
+  [ "$VERBOSE" = "true" ] && cat verdict && echo
 done
 
 echo "All good.";
