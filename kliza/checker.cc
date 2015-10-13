@@ -160,14 +160,14 @@ void provjeri_rekonstrukciju(string kome, string ploca,
   for (size_t i = 0; i < rekonstruckija.size(); ++i) {
     int trenutni_potez = rekonstruckija[i];
     if (!jeli_susjedno(gdje_je[trenutni_potez], gdje_je_x)) {
-      VERDICT(0) << i << "th move is invalid for " << kome << ".";
+      VERDICT(0.5) << i << "th move is invalid for " << kome << ".";
     }
     swap(ploca[gdje_je[trenutni_potez]], ploca[gdje_je_x]);
     swap(gdje_je[trenutni_potez], gdje_je_x);
   }
   if (ploca != "12345678X") {
-    VERDICT(0) << "Final board position is " << ploca << " for " << kome <<
-      ".";
+    VERDICT(0.5) << "Final board position is " << ploca
+                 << " for " << kome << ".";
   }
 }
 
