@@ -46,10 +46,8 @@ class Tester {
 #define TEST(ime, body) void TEST_##ime() body; Tester test_##ime(TEST_##ime);
 
 string ploca;
-int sluzbeno_min_broj_poteza;
 int kandidat_min_broj_poteza;
 vector<int> kandidat_rekonstrukcija;
-vector<int> sluzbeno_rekonstrukcija;
 
 void procitaj_sluzbeni_input(ifstream &in) {
   for (int i = 0; i < 9; ++i) {
@@ -61,15 +59,6 @@ void procitaj_sluzbeni_input(ifstream &in) {
   string sorted_ploca = ploca;
   sort(sorted_ploca.begin(), sorted_ploca.end());
   assert(sorted_ploca == "12345678X");
-}
-
-void procitaj_sluzbeni_output(ifstream &in) {
-  assert(in >> sluzbeno_min_broj_poteza);
-  for (int i = 0; i < sluzbeno_min_broj_poteza; ++i) {
-    int potez;
-    assert(in >> potez);
-    sluzbeno_rekonstrukcija.push_back(potez);
-  }
 }
 
 void procitaj_kandidat_output(ifstream &in) {
@@ -114,7 +103,7 @@ TEST(jeli_susjedno, {
   assert(!jeli_susjedno(4, 8));
 });
 
-void provjeri_rekonstrukciju(string ploca, const vector<int>& rekonstruckija) {
+void provjeri_rekonstrukciju() {
   vector<int> gdje_je(10);
   int gdje_je_x = -1;
   for (size_t i = 0; i < ploca.size(); ++i) {
@@ -125,8 +114,8 @@ void provjeri_rekonstrukciju(string ploca, const vector<int>& rekonstruckija) {
     }
   }
   assert(gdje_je_x != -1);
-  for (size_t i = 0; i < rekonstruckija.size(); ++i) {
-    int trenutni_potez = rekonstruckija[i];
+  for (size_t i = 0; i < kandidat_rekonstruckija.size(); ++i) {
+    int trenutni_potez = kandidat_rekonstruckija[i];
     if (!jeli_susjedno(gdje_je[trenutni_potez], gdje_je_x)) {
       VERDICT(0.5) << WRONG_MOVES;
     }
@@ -149,10 +138,8 @@ int main(int argc, char *argv[]) {
 
   string rj, slurj;
   procitaj_sluzbeni_input(finput);
-  procitaj_sluzbeni_output(fsluzb);
   procitaj_kandidat_output(fnatj);
-  provjeri_rekonstrukciju(ploca, sluzbeno_rekonstrukcija);
-  provjeri_rekonstrukciju(ploca, kandidat_rekonstrukcija);
+  provjeri_rekonstrukciju();
   VERDICT(1) << CORRECT_SOLUTION;
 
   return 0;
