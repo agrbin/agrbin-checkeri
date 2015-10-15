@@ -8,6 +8,11 @@
 
 using namespace std;
 
+const string WRONG_MINIMUM_NUMBER_OF_MOVES = "Wrong minimum number of moves.";
+const string WRONG_MOVES = "Correct minimum number of moves, but wrong moves.";
+const string TOO_MUCH_DATA = "Too much data written to output.";
+const string CORRECT_SOLUTION = "Correct solution!";
+
 // Usage:
 //  VERDICT(0) << "got " << 5 << " expected " << 6;
 // This will output
@@ -21,8 +26,7 @@ using namespace std;
 // And exit with status 1.
 class ExitStream {
  public:
-  ExitStream(double score) : status_(0) {cout << score << endl;}
-  ExitStream(string dummy, int status) : status_(status) {}
+  ExitStream(double score) {cout << score << endl;}
 
   template<class T>
   ExitStream& operator<< (const T& obj) {
@@ -30,12 +34,9 @@ class ExitStream {
     return *this;
   }
 
-  ~ExitStream() { cout << endl; exit(status_); }
- private:
-  int status_;
+  ~ExitStream() { cout << endl; exit(0); }
 };
 #define VERDICT(score) ExitStream(score)
-#define EXIT(status) ExitStream("", status)
 
 typedef void (*TestBody)();
 class Tester {
@@ -53,76 +54,45 @@ vector<int> sluzbeno_rekonstrukcija;
 void procitaj_sluzbeni_input(ifstream &in) {
   for (int i = 0; i < 9; ++i) {
     string element;
-    if (!(in >> element)) {
-      VERDICT(0) << "Couldn't read " << i << "th element from official input.";
-    }
-    if (element.size() != 1) {
-      VERDICT(0) << "Unexpected word in official input: " << element;
-    }
-    char znak = element[0];
-    if (!(znak == 'X' || (znak >= '0' && znak <= '9'))) {
-      VERDICT(0) << "Unexpected char in official input: " << element;
-    }
-    ploca.push_back(znak);
+    assert(in >> element);
+    assert(element.size() == 1);
+    ploca.push_back(element[0]);
   }
   string sorted_ploca = ploca;
   sort(sorted_ploca.begin(), sorted_ploca.end());
-  if (sorted_ploca != "12345678X") {
-    VERDICT(0) << "Unexpected official input table.";
-  }
+  assert(sorted_ploca == "12345678X");
 }
 
 void procitaj_sluzbeni_output(ifstream &in) {
-  if (!(in >> sluzbeno_min_broj_poteza)) {
-    VERDICT(0) << "Couldn't read official minimum number of moves.";
-  }
+  assert(in >> sluzbeno_min_broj_poteza);
   for (int i = 0; i < sluzbeno_min_broj_poteza; ++i) {
     int potez;
-    if (!(in >> potez)) {
-      VERDICT(0) << "Couldn't read "
-        << i << "th move from official input. Expected "
-        << sluzbeno_min_broj_poteza << " moves.";
-    }
+    assert(in >> potez);
     sluzbeno_rekonstrukcija.push_back(potez);
-  }
-  int tmp;
-  if (in >> tmp) {
-    VERDICT(0) << "Official input contains too much data.";
   }
 }
 
 void procitaj_kandidat_output(ifstream &in) {
   if (!(in >> kandidat_min_broj_poteza)) {
-    VERDICT(0) << "Couldn't read minimal number of moves.";
+    VERDICT(0) << WRONG_MINIMUM_NUMBER_OF_MOVES;
   }
   if (kandidat_min_broj_poteza != sluzbeno_min_broj_poteza) {
-    VERDICT(0.5) << "Wrong minimal number of moves. Got: "
-      << kandidat_min_broj_poteza << " Expected "
-      << sluzbeno_min_broj_poteza;
+    VERDICT(0.5) << WRONG_MINIMUM_NUMBER_OF_MOVES;
   }
   for (int i = 0; i < kandidat_min_broj_poteza; ++i) {
     int potez;
     if (!(in >> potez)) {
-      VERDICT(0.5) << "Couldn't read "
-        << i << "th move from official input. Expected: "
-        << sluzbeno_min_broj_poteza << " moves.";
+      VERDICT(0.5) << WRONG_MOVES;
     }
     kandidat_rekonstrukcija.push_back(potez);
   }
   int tmp;
   if (in >> tmp) {
-    VERDICT(0.5) << "User input contains too much data.";
+    VERDICT(0.5) << TOO_MUCH_DATA;
   }
 }
 
 int mabs(int x) {return x < 0 ? -x : x;}
-
-TEST(mabs, {
-  assert(mabs(-5) == 5);
-  assert(mabs(5) == 5);
-  assert(mabs(0) == 0);
-});
-
 bool jeli_susjedno(int i1, int i2) {
   int r1 = i1 / 3, s1 = i1 % 3;
   int r2 = i2 / 3, s2 = i2 % 3;
@@ -144,9 +114,7 @@ TEST(jeli_susjedno, {
   assert(!jeli_susjedno(4, 8));
 });
 
-// kome je "official output" ili "user output".
-void provjeri_rekonstrukciju(string kome, string ploca,
-    const vector<int>& rekonstruckija) {
+void provjeri_rekonstrukciju(string ploca, const vector<int>& rekonstruckija) {
   vector<int> gdje_je(10);
   int gdje_je_x = -1;
   for (size_t i = 0; i < ploca.size(); ++i) {
@@ -160,14 +128,13 @@ void provjeri_rekonstrukciju(string kome, string ploca,
   for (size_t i = 0; i < rekonstruckija.size(); ++i) {
     int trenutni_potez = rekonstruckija[i];
     if (!jeli_susjedno(gdje_je[trenutni_potez], gdje_je_x)) {
-      VERDICT(0.5) << i << "th move is invalid for " << kome << ".";
+      VERDICT(0.5) << WRONG_MOVES;
     }
     swap(ploca[gdje_je[trenutni_potez]], ploca[gdje_je_x]);
     swap(gdje_je[trenutni_potez], gdje_je_x);
   }
   if (ploca != "12345678X") {
-    VERDICT(0.5) << "Final board position is " << ploca
-                 << " for " << kome << ".";
+    VERDICT(0.5) << WRONG_MOVES;
   }
 }
 
@@ -178,18 +145,15 @@ int main(int argc, char *argv[]) {
   ifstream fsluzb(argv[2]);
   ifstream fnatj(argv[3]);
 
-  if (finput.fail() || fsluzb.fail() || fnatj.fail()) {
-    EXIT(1) << "Internal: one of the input streams failed.";
-  }
+  assert(!(finput.fail() || fsluzb.fail() || fnatj.fail()));
 
   string rj, slurj;
   procitaj_sluzbeni_input(finput);
   procitaj_sluzbeni_output(fsluzb);
   procitaj_kandidat_output(fnatj);
-
-  provjeri_rekonstrukciju("official output", ploca, sluzbeno_rekonstrukcija);
-  provjeri_rekonstrukciju("user output", ploca, kandidat_rekonstrukcija);
-  VERDICT(1) << "Correct solution!";
+  provjeri_rekonstrukciju(ploca, sluzbeno_rekonstrukcija);
+  provjeri_rekonstrukciju(ploca, kandidat_rekonstrukcija);
+  VERDICT(1) << CORRECT_SOLUTION;
 
   return 0;
 }

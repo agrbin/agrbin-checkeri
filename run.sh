@@ -22,7 +22,7 @@ for i in $dir/tp/*in*; do
   out=${i/in/out};
   ./checker $in $out $out > verdict
   if [ $? -ne 0 ]; then
-    echo "Checker returned non zero exit code.";
+    echo "Checker returned non zero exit code for $in.";
     exit;
   fi
   if [ $(head -n1 verdict) != "1" ]; then
@@ -33,18 +33,15 @@ for i in $dir/tp/*in*; do
   fi
   echo $in $out is good.
   [ "$VERBOSE" = "true" ] && cat verdict && echo
+  rm verdict
 done
 
 for i in $dir/broken_tp/*in*; do
   in=$i;
   out=${i/in/out};
   uout=${i/in/uout};
-  ./checker $in $out $uout > verdict
-  if [ $? -ne 0 ]; then
-    echo "Checker returned non zero exit code.";
-    exit;
-  fi
-  if [ $(head -n1 verdict) = "1" ]; then
+  ./checker $in $out $uout > verdict 2> /dev/null
+  if [ "$(head -n1 verdict)" = "1" ]; then
     echo "Checker thinks that broken solution is correct: ";
     echo $in $out $uout
     cat verdict
@@ -52,8 +49,8 @@ for i in $dir/broken_tp/*in*; do
   fi
   echo $in $out $uout is broken as it should be.
   [ "$VERBOSE" = "true" ] && cat verdict && echo
+  rm verdict
 done
 
 echo "All good.";
 rm checker
-rm verdict
