@@ -15,7 +15,12 @@ dir=$1
 [ ! -d $dir/tp ] && echo "$dir/tp is not a dir." && exit
 [ ! -d $dir/broken_tp ] && echo "$dir/broken_tp is not a dir." && exit
 
-g++ -Wall -Wextra $dir/checker.cc -ochecker
+if g++ -Wall -Wextra $dir/checker.cc -ochecker; then
+  echo
+else
+  echo Compilation failed.
+  exit 1
+fi
 
 for i in $dir/tp/*in*; do
   in=$i;

@@ -1,5 +1,5 @@
 #include <cassert>
-#include <set>
+#include <map>
 #include <vector>
 #include <cstdlib>
 #include <fstream>
@@ -40,7 +40,7 @@ void verdict(int score, const char* text) {
 
 void procitaj_sluzbeni_input(ifstream &in) {
   assert(in >> N >> K);
-  for (int i = 0; i < N; ++i) {
+  for (size_t i = 0; i < N; ++i) {
     assert(in >> nodes[i].x >> nodes[i].y >> nodes[i].m);
     lookup[make_pair(nodes[i].x, nodes[i].y)] = nodes + i;
   }
@@ -52,21 +52,21 @@ void procitaj_sluzbeni_output(ifstream &in) {
 
 int mabs(int x) {return x < 0 ? -x : x;}
 
-void check_valid_move(const pii& last, const pii& current, int energy) {
+int check_valid_move(const pii& last, const pii& current, int energy) {
   int dx = mabs(current.first - last.first);
   int dy = mabs(current.second - last.second);
-  int distance = std::max(dx, dy);
   if (std::min(dx, dy) != 0) {
     verdict(0, WRONG_MOVE_GEOMETRY);
   }
   if (lookup[current] == NULL) {
     verdict(0, WRONG_MOVE_NO_LOTUS);
   }
-  if (energy < distance) {
+  energy -= K;
+  if (energy < 0) {
     verdict(0, WRONG_MOVE_ENERGY);
   }
-  energy -= distance;
   energy += lookup[current]->m;
+  return energy;
 }
 
 void procitaj_kandidat_output(ifstream &in) {
@@ -81,7 +81,10 @@ void procitaj_kandidat_output(ifstream &in) {
     verdict(0, WRONG_NUMBER_OF_MOVES);
   }
   pii last(nodes[0].x, nodes[0].y);
-  int energy = nodes[0].m;
+  // first move is special it will take K energy and it will
+  // give energy from the first lotus. So after first move we will have
+  // expected amount of energy (K - K + first_lotus_energy).
+  int energy = K;
   for (int i = 0; i < kandidat_poteza; ++i) {
     pii current;
     if (!(in >> current.first >> current.second)) {
@@ -90,7 +93,8 @@ void procitaj_kandidat_output(ifstream &in) {
     if (i == 0 && lookup[current] != nodes) {
       verdict(0, NOT_FIRST);
     }
-    energy = get_next_energy(last, current, energy);
+    energy = check_valid_move(last, current, energy);
+    last = current;
   }
   if (energy != kandidat_energija) {
     verdict(0, WRONG_ENERGY_SUM);
