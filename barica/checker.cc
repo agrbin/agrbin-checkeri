@@ -50,12 +50,18 @@ void procitaj_sluzbeni_output(ifstream &in) {
   assert(in >> sluzbeno_energija >> sluzbeno_poteza);
 }
 
-int mabs(int x) {return x < 0 ? -x : x;}
+bool is_valid_geometry(const pii& last, const pii& current) {
+  if (current.first == last.first && current.second > last.second) {
+    return true;
+  }
+  if (current.second == last.second && current.first > last.first) {
+    return true;
+  }
+  return false;
+}
 
 int check_valid_move(const pii& last, const pii& current, int energy) {
-  int dx = mabs(current.first - last.first);
-  int dy = mabs(current.second - last.second);
-  if (std::min(dx, dy) != 0) {
+  if (!is_valid_geometry(last, current)) {
     verdict(0, WRONG_MOVE_GEOMETRY);
   }
   if (lookup[current] == NULL) {
@@ -84,16 +90,19 @@ void procitaj_kandidat_output(ifstream &in) {
   // first move is special it will take K energy and it will
   // give energy from the first lotus. So after first move we will have
   // expected amount of energy (K - K + first_lotus_energy).
-  int energy = K;
+  int energy = nodes[0].m;
   for (int i = 0; i < kandidat_poteza; ++i) {
     pii current;
     if (!(in >> current.first >> current.second)) {
       verdict(0, NOT_ENOUGH_DATA);
     }
-    if (i == 0 && lookup[current] != nodes) {
-      verdict(0, NOT_FIRST);
+    if (i == 0) {
+      if (lookup[current] != nodes) {
+        verdict(0, NOT_FIRST);
+      }
+    } else {
+      energy = check_valid_move(last, current, energy);
     }
-    energy = check_valid_move(last, current, energy);
     last = current;
   }
   if (energy != kandidat_energija) {
