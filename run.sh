@@ -22,50 +22,54 @@ else
   exit 1
 fi
 
-for i in $dir/tp/*in*; do
-  in=$i;
-  out=${i/in/out};
-  ./checker $in $out $out > verdict
-  if [ "$VERBOSE" = "2" ]; then
-    echo $in $out $out
-    cat verdict
-    echo
-  fi
-  if [ $? -ne 0 ]; then
-    echo "Checker returned non zero exit code for $in.";
-    exit;
-  fi
-  if [ $(head -n1 verdict) != "1" ]; then
-    echo "Checker thinks that official solution is not correct: ";
-    echo $in $out
-    cat verdict
-    exit;
-  fi
-  echo $in $out is good.
-  [ "$VERBOSE" = "1" ] && cat verdict && echo
-  rm verdict
-done
+if [ -z "$SKIP_GOOD" ]; then
+  for i in $dir/tp/*in*; do
+    in=$i;
+    out=${i/in/out};
+    ./checker $in $out $out > verdict
+    if [ "$VERBOSE" = "2" ]; then
+      echo $in $out $out
+      cat verdict
+      echo
+    fi
+    if [ $? -ne 0 ]; then
+      echo "Checker returned non zero exit code for $in.";
+      exit;
+    fi
+    if [ "$(head -c1 verdict)" != "1" ]; then
+      echo "Checker thinks that official solution is not correct: ";
+      echo $in $out
+      cat verdict
+      exit;
+    fi
+    echo $in $out is good.
+    [ "$VERBOSE" = "1" ] && cat verdict && echo
+    rm verdict
+  done
+fi
 
-for i in $dir/broken_tp/*in*; do
-  in=$i;
-  out=${i/in/out};
-  uout=${i/in/uout};
-  ./checker $in $out $uout > verdict 2> /dev/null
-  if [ "$VERBOSE" = "2" ]; then
-    echo $in $out $uout
-    cat verdict
-    echo
-  fi
-  if [ "$(head -n1 verdict)" = "1" ]; then
-    echo "Checker thinks that broken solution is correct: ";
-    echo $in $out $uout
-    cat verdict
-    exit;
-  fi
-  echo $in $out $uout is broken as it should be.
-  [ "$VERBOSE" = "1" ] && cat verdict && echo
-  rm verdict
-done
+if [ -z "$SKIP_BAD" ]; then
+  for i in $dir/broken_tp/*in*; do
+    in=$i;
+    out=${i/in/out};
+    uout=${i/in/uout};
+    ./checker $in $out $uout > verdict 2> /dev/null
+    if [ "$VERBOSE" = "2" ]; then
+      echo $in $out $uout
+      cat verdict
+      echo
+    fi
+    if [ "$(head -c1 verdict)" = "1" ]; then
+      echo "Checker thinks that broken solution is correct: ";
+      echo $in $out $uout
+      cat verdict
+      exit;
+    fi
+    echo $in $out $uout is broken as it should be.
+    [ "$VERBOSE" = "1" ] && cat verdict && echo
+    rm verdict
+  done
+fi
 
 echo "All good.";
 rm checker
